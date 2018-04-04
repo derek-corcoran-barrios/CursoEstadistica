@@ -1,0 +1,4 @@
+"0","manuales <- mt %>% filter(am == ""manual"")"
+"0","hist(manual$mpg)"
+"2","Error in hist(manual$mpg) : object 'manual' not found
+"

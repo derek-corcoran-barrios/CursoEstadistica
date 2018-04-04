@@ -1,0 +1,165 @@
+---
+title: "Tests de una y dos muestras"
+output:
+  learnr::tutorial:
+    progressive: true
+runtime: shiny_prerendered
+bibliography: inter.bib
+---
+
+```{r setup, include=FALSE}
+library(learnr)
+knitr::opts_chunk$set(echo = FALSE)
+suppressMessages(suppressWarnings(library(tidyverse, quietly = TRUE)))
+data("airquality")
+BeerDark <- read_csv("https://archive.org/download/BeerDark/BeerDark.csv")
+#BeerDark <- read_csv("/home/derek/Documents/BioestadisticaII/Practico5/BeerDark.csv")
+```
+
+## Pruebas de una muestra
+
+### El problema del ozono en la atmósfera baja
+
+De acuerdo a varios estudios, concentraciones altas de ozono en la atmosfera baja pueden causar riesgos importantes a la salud respiratoria de la población desde las 60 ppb (partículas por billón) [@world2003health]. El ozono en la atmosfera baja cuando los rayos UV rompen moleculas liberadas por la combustión de hidrocarburos.
+
+La base de datos **Airquality** (incorporada como ejemplo en **R**), muestra entre otras variables las partículas de ozono en Nueva York, cada día de Mayo a Septiembre de 1973 entre las 13:00 y las 15:00 [@chambers35graphical]. Supongamos que ustedes estan a cargo de una agencia ambiental, y están estudiando en que meses deben reducir la actividad vehicular de Nueva York. Para esto planean disminuir a la mitad los pasajes del metro de Nueva York todos los meses que en promedio tengan sobre 55 ppb. Para esto deben comprobar estadisticamente que el mes en que harán esto tiene promedios sobre 55.
+
+Para empezar generen una tabla resumen con las medias y desviaciones estandar de ozono para cada mes para ver en que meses se podría realizar esta prueba, para todos los ejercicios de esta sección la base de datos **airquality** ya esta cargada, asi como el paquete **tidyverse**, de todas maneras, te recomiendo trabajar en tu sesión además de en el tutorial.
+
+
+```{r resumen, exercise=TRUE, exercise.lines = 5}
+airquality %>% group_by()
+```
+
+<div id="resumen-hint">
+**Consejo:** recuerda que si dentro de los meses hay valores NA, debes ocupar el argumento *na.rm = TRUE* dentro de las funciones `mean` y `sd`.
+</div>
+
+
+```{r resumen-solution}
+airquality %>% group_by(Month) %>% summarize(Mean = mean(Ozone, rm.na = TRUE), SD = sd(Ozone, rm.na = TRUE))
+```
+
+Después de eso debes generar un data frame por cada mes que quieres poner a prueba si su media es o no significativamente mayor a 55, recuerda guardarlos como objetos para utilizarlos más adelante en la prueba de t de una muestra.
+
+Para realizar la prueba de t, puedes usar la función **t.test**, en este caso como primer argumento debes usar un vector con los valores a testear, luego debes establecer el valor teórico de la media con un valor numérico, por ejemplo mu = 10. Finalmente, debes llenar el argumento *alternative*, en el cual puedes poner "two.sided" si solo quieres ver si la media de tu muestra es distinta a la teórica, "less" si quieres testear si tu muestra tiene una media menor a la teórica y finalmente "greater", si quieres testear si la media es mayor a la teórica. Para este problema, este argumento es el más relevante
+
+Recuerda que si tienes un data frame, puedes usar una columna como vector llamandola con el signo peso, por ejemplo con la base de datos **mtcars** que hemos usado en el curso, si quisieramos usar los valores de la columna **mpg** como vector lo escribiríamos **mtcars$mpg**.
+
+En el siguiente espacio, genera los data frames de los meses que quieres poner a prueba y determina si tienen en promedio una concentración de ozono mayor a 55 ppb.
+
+```{r t_test, exercise=TRUE, exercise.lines = 8}
+
+```
+
+```{r t_test-hint-1}
+#Si quisieras guardar el mes de mayo podrías partir de la siguiente forma
+AirMay <- airquality %>% filter()
+```
+
+```{r t_test-hint-2}
+#Si quisieras guardar el mes de mayo podrías partir de la siguiente forma
+t.test(AirMay$Ozone)
+```
+
+#### Toma de decisiones
+
+```{r quiz}
+quiz(
+  question("Dada tu prueba de hipótesis sobre el ozono en Nueva York, ¿En que meses se debiera bajar el precio a la mitad?",
+    answer("Mayo"),
+    answer("Julio"),
+    answer("Agosto"),
+    answer("Julio y Agosto"),
+    answer("Todos los meses"),
+    answer("Ningún mes", correct = TRUE),
+    allow_retry = TRUE,
+    random_answer_order = TRUE
+  )
+)
+```
+
+
+## Pruebas de dos muestras
+
+Para el siguiente ejercicio usaremos la base de datos `BeerDark` disponible en webcursos o en el siguiente [link](https://archive.org/download/BeerDark/BeerDark.csv). Esta base de datos posee 7 columnas, pero usaremos solo 4 de ellas:
+
+* **Estilo:** Separa las cervezas entre Porters y Stouts
+* **Grado_Alcoholico:** El grado alcoholico de las cervezas
+* **Amargor:** Valor IBU (International Bittering Units), a mayor valor más amarga la cerveza
+* **Color:** A mayor valor más oscura la cerveza.
+
+Determinar si las cervezas Porter y Stouts son distintas en grado alcoholico, amargor y/o color, para esta base de datos. 
+```{r beer, exercise=TRUE, exercise.lines = 8}
+t.test(data = BeerDark)
+```
+
+```{r quiz-cerveza}
+quiz(
+  question("Dada tu prueba de hipótesis sobre las cervezas, ¿En que caracteristicas son estadisticamente diferentes las cervezas Porter y Stout?",
+    answer("grado alcoholico"),
+    answer("amargor"),
+    answer("color"),
+    answer("grado alcoholico y amargor"),
+    answer("grado alcoholico y color"),
+    answer("amargor y color"),
+    answer("grado alcoholico, amargor y color", correct = TRUE),
+    answer("Ninguna caracteristica"),
+    allow_retry = TRUE,
+    random_answer_order = TRUE
+  )
+)
+```
+
+## Supuestos de la prueba de t y alternativas
+
+Los supuestos de la t de student son las siguientes [@boneau1960effects]
+
+* Independencia de las observaciones
+* Distribución normal de los datos en cada grupo
+* Homogeneidad de varianza
+
+### Prueba de una muestra
+
+Como siempre la independencia de las muestras es algo que solo puede determinarse en base a el diseño del muestreo, y por otro lado, al haber solo una muestra, la homogeneidad de varianza no es un problema, en este caso solo podemos ver si la distribución es normal. Volviendo a nuestro ejercicio de una muestra, con la base de datos `airquality`, evalue basado en histograma, qqplot y test de shapiro si se debe reevaluar la hipótesis para los meses de julio y agosto
+
+```{r revalair, exercise=TRUE, exercise.lines = 8}
+AirJuly <- airquality %>% filter(Month == 7)
+AirAug <- airquality %>% filter(Month == 8)
+```
+
+```{r quiz-aire}
+quiz(
+  question("¿Es necesario reevaluar la hipótesis?",
+    answer("Si"),
+    answer("No", correct = TRUE),
+    allow_retry = TRUE,
+    random_answer_order = TRUE
+  )
+)
+```
+
+### Prueba de dos muestras
+
+Para una prueba de dos muestras, podemos testear tanto la homogeneidad de varianza como la normalidad, para ver las dos cosas al mismo tiempo podemos usar un gráfico de violín `geom_violin` en *ggplot2*, lo cual puede seguir siendo explorando esto visualmente usando la función `hist` generando dos data frames, uno por cada clase de datos.
+
+Evalúe si es necesario revaluar la hipotesis de que el amargor es distinto entre ambos estilos de cerveza
+
+```{r revalbeer, exercise=TRUE, exercise.lines = 8}
+BeerPorter <- BeerDark %>% filter(Estilo == "Porter")
+BeerStout <- BeerDark %>% filter(Estilo == "Stout")
+```
+
+```{r quiz-Beer}
+quiz(
+  question("¿Es necesario reevaluar la ?",
+    answer("Si", correct = TRUE),
+    answer("No"),
+    allow_retry = TRUE,
+    random_answer_order = TRUE
+  )
+)
+```
+
+
+## Bibliografía

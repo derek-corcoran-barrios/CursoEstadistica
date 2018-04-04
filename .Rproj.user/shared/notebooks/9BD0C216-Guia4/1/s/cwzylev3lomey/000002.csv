@@ -1,0 +1,8 @@
+"0","library(kableExtra)"
+"0","Coso <- data.frame(Hipotesis.Nula = c(""No hay error"", ""Error tipo 1""), Hipostesis.alternativa =c(""Error tipo 2"", ""No hay error""))"
+"0","colnames(Coso) <- c(""Hipotesis nula cierta"", ""Hipotesis alternativa cierta"")"
+"0","rownames(Coso) <- c(""Acepto hipótesis nula"", ""Acepto Hipotesis alternativa"")"
+"0","kable(Coso, caption = ""Tabla de confusión de errores"") %>% kable_styling(font_size = 40)"
+"2","Error in kable(Coso, caption = ""Tabla de confusión de errores"") : 
+  could not find function ""kable""
+"

@@ -1,0 +1,10 @@
+\contentsline {subsection}{Prueba t de Student}{1}{section*.2}
+\contentsline {subsubsection}{Pruebas de una muestra}{1}{section*.3}
+\contentsline {paragraph}{Ejercicio 1}{2}{section*.4}
+\contentsline {subsubsection}{Pruebas de dos muestras}{2}{section*.5}
+\contentsline {paragraph}{Ejercicio 2}{2}{section*.6}
+\contentsline {subsection}{Supuestos de la prueba de t y alternativas}{4}{section*.7}
+\contentsline {subsubsection}{Prueba de una muestra}{4}{section*.8}
+\contentsline {subsubsection}{Prueba de dos muestras}{6}{section*.9}
+\contentsline {paragraph}{Ejercicio 3}{7}{section*.10}
+\contentsline {subsection}{Bibliograf\IeC {\'\i }a}{9}{section*.11}

@@ -1,0 +1,1 @@
+{"frames":[{"character_number":0,"end_character_number":0,"end_line_number":0,"file":"","func":"hist(manual$mpg)","line_number":0}],"message":"Error in hist(manual$mpg) : object 'manual' not found\n"}

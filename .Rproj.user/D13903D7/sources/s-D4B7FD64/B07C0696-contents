@@ -1,0 +1,67 @@
+setwd("/home/derek/Documents/BioestadisticaII/Practico5")
+
+library(tidyverse)
+library(caret)
+library(rpart.plot)
+
+Beer <- read_csv("recipeData.csv") %>% select(Name, Style, OG, FG, ABV, IBU, Color) %>% rename(Nombre = Name, Estilo = Style, Gravedad_Original = OG, Gravedad_Final = FG, Grado_Alcoholico = ABV,  Amargor = IBU) %>% filter(Amargor < 660)
+write.csv(Beer, "Beer.csv", row.names = FALSE)
+
+BeerSimple <- Beer %>% filter(Estilo %in% c("American IPA", "American Lager", "American Pale Ale","American Porter", "Baltic Porter", "Belgian Blond Ale", "Belgian Dubbel","Belgian Pale Ale", "Blonde Ale", "British Brown Ale","British Golden Ale", "British Strong Ale", "Brown Porter", "Classic American Pilsner", "Czech Amber Lager", "Czech Dark Lager", "Czech Pale Lager", "Czech Premium Pale Lager", "Doppelbock", "Dry Stout", "Dunkles Bock", "English Cider", "English IPA", "English Porter", "Flanders Red Ale", "Foreign Extra Stout", "German Pilsner (Pils)","Imperial IPA", "Imperial Stout", "International Amber Lager","International Dark Lager", "International Pale Lager", "Irish Extra Stout","Irish Red Ale", "Irish Stout", "Light American Lager", "London Brown Ale", "Northern English Brown","Premium American Lager", "Robust Porter", "Russian Imperial Stout", "Southern English Brown" ,"Standard American Lager", "Strong Scotch Ale", "Sweet Stout", "Traditional Bock", "Tropical Stout","Vienna Lager"))
+write.csv(BeerSimple, "BeerSimple.csv", row.names = FALSE)
+
+BeerStout <- BeerSimple %>%  filter(Estilo %in% c("Russian Imperial Stout", "Sweet Stout", "Dry Stout", "Foreign Extra Stout", "Imperial Stout", "Irish Stout", "Tropical Stout", "Irish Extra Stout"))
+write.csv(BeerStout, "BeerStout.csv", row.names = FALSE)
+
+BeerPorter <- BeerSimple %>%  filter(Estilo %in% c("Robust Porter", "Brown Porter", "Baltic Porter", "English Porter", "American Porter"))
+write.csv(BeerPorter, "BeerPorter.csv", row.names = FALSE)
+
+BeerP <- BeerPorter
+BeerP$Estilo <- "Porter"
+BeerS <- BeerStout
+BeerS$Estilo <- "Stout"
+BeerDark <- rbind(BeerS, BeerP)
+write.csv(BeerDark, "BeerDark.csv", row.names = FALSE)
+
+library(ggplot2)
+
+ggplot(BeerStout, aes(x = Estilo, y = Amargor)) + geom_boxplot() 
+ggplot(BeerPorter, aes(x = Estilo, y = Amargor)) + geom_boxplot()
+ggplot(BeerDark, aes(x = Estilo, y = Amargor)) + geom_violin()
+ggplot(BeerDark, aes(x = Estilo, y = Amargor)) + geom_boxplot()
+ggplot(BeerDark, aes(x = Estilo, y = Amargor)) + geom_violin() 
+ggplot(BeerDark, aes(x = Estilo, y = Amargor)) + geom_boxplot()
+
+ggplot(BeerDark, aes(x = Amargor)) + geom_histogram(aes(fill = Estilo), alpha = 0.5, bins = nclass.Sturges(BeerDark$Grado_Alcoholico))
+
+
+setwd("/home/derek/Documents/BioestadisticaII")
+#set.seed(2018)
+#TrainIndex <- createDataPartition(Beer$Estilo, p = 0.3, list = FALSE, times = 1)
+
+ggplot(airquality, aes(x = Ozone)) + geom_histogram(bins = nclass.Sturges(airquality$Ozone))
+
+ggplot(airquality)
+
+SummAir <- airquality %>% group_by(Month) %>% summarise(Mean = mean(Ozone, na.rm = TRUE), SD = sd(Ozone, na.rm = TRUE), N = n())
+
+library(ggvis)
+
+AirJuly <- airquality %>% filter(Month == 7)  
+AirAug <- airquality %>% filter(Month == 8)  
+
+
+t.test(AirJuly$Ozone, mu = 55, alternative = "greater")
+t.test(AirAug$Ozone, mu = 55, alternative = "greater")
+library(broom)
+airquality %>% split(.$Month) %>% map(~ t.test(.$Ozone, mu = 55, alternative = "greater")) %>% map(tidy) %>% reduce(rbind)
+
+ggplot(AirJuly, aes(x = Ozone)) + geom_histogram(bins = nclass.Sturges(AirJuly$Ozone))
+
+
+
+
+#beerTrain <- Beer[TrainIndex,]
+#beerTest  <- Beer[-TrainIndex,]
+
+#BeerModel <- train(Estilo ~., data = beerTrain, method = "rpart")

@@ -1,0 +1,5 @@
+"0","library(tidyverse, kableExtra)"
+"0","EducacionChile <- read_csv(""EducacionChile.csv"")"
+"0","##Resumimos los datos usando tidyverse"
+"0","EducacionChilePesada <- group_by(EducacionChile, Administration) %>% summarise(PromedioPSU = weighted.mean(Average.PSU, Number.of.records), SD.PSU = sd(Average.PSU), N = n())"
+"0","knitr::kable(EducacionChilePesada, caption = ""Tabla 1: Promedios"") %>% kableExtra::kable_styling(full_width = F)"

@@ -1,0 +1,50 @@
+---
+title: "Control 1"
+output:
+  pdf_document: default
+date: "14 de Marzo, 2018"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+```
+
+## Pregunta 1
+
+De acuerdo a data chile  <https://es.datachile.io>, en una recolección de datos de la PSU de **todos los liceos y colegios de Chile** para el año 2016. En la tabla 1 vemos los promedios de puntaje de PSU, su deviaciones estandard y número de instituciones de cada tipo:
+
+```{r}
+library(tidyverse, kableExtra)
+EducacionChile <- read_csv("EducacionChile.csv")
+
+##Resumimos los datos usando tidyverse
+
+EducacionChilePesada <- group_by(EducacionChile, Administration) %>% summarise(PromedioPSU = weighted.mean(Average.PSU, Number.of.records), SD.PSU = sd(Average.PSU), N = n())
+knitr::kable(EducacionChilePesada, caption = "Promedios totales PSU", digits = 2)
+```
+
+Al respecto, reponda y fundamente lo siguiente:
+
+1- ¿Podemos decir que hay diferencias significativas entre los promedios de PSU de las instituciones de Corporación de Administración Delegada y las Municipales? fundamente su respuesta
+
+2- Supongamos que usted contrata alguien que tome una muestra de 100 instituciones por que no hay presupuesto para medir todas, y la tabla 2 es el resultado que le entregan ¿Que se podria haber hecho para mejorar el diseño de muestreo?
+
+```{r}
+set.seed(2018)
+Muestra <- sample_n(EducacionChile, size = 100) %>% group_by(Administration) %>% summarise(PromedioPSU = weighted.mean(Average.PSU, Number.of.records), SD.PSU = sd(Average.PSU), N = n())
+knitr::kable(Muestra, caption = "Promedios muestreales PSU", digits = 2)
+```
+
+3- Si tuviera que hacer un Analisis de Varianza considerando la tabla 2 en que tenemos un n de 100 instituciones y un k de 4 tipos de instituciones, ¿Cual serían los grados de libertad para este problema?
+
+4- Al hacer un análisis de varianza de un muestreo aleatorio de 60 intituciones (15 de cada tipo de institución). Obtenemos el siguiente resultado
+
+```{r}
+set.seed(2018)
+Muestra <- EducacionChile %>%  group_by(Administration) %>%  sample_n(size = 15)
+Muestra.aov <- aov(Average.PSU ~ Administration, data = Muestra)
+# Summary of the analysis
+summary(Muestra.aov)
+```
+
+* ¿Podemos decir que todos los tipos de institución tienen medias diferentes, asumiendo un alfa = 0.05? justifique su respuesta

@@ -1,0 +1,6 @@
+"0","a <- rnorm(n = 100, mean = 60, sd = 5)"
+"0","DF <- density(a)"
+"0","DF <- data.frame(Value = DF$x, Frequency = DF$y)"
+"0","DFPlus <- DF %>% dplyr::filter(Value  >= 70)"
+"0","DFMinus <- DF %>% dplyr::filter(Value  <= 50)"
+"0","ggplot(DF, aes(x = Value, y = Frequency)) + geom_line() + geom_ribbon(data = DFPlus, aes(ymax = Frequency, ymin = 0), fill = ""red"")"

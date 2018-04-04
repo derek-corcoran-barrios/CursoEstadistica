@@ -1,0 +1,50 @@
+---
+title: "Control 2"
+output:
+  pdf_document:
+    fig_height: 3
+    fig_width: 8
+date: "14 de Marzo, 2018"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+```
+
+## Pregunta 1
+
+Tenemos 3 especies de *Nothofagus*, las cuales queremos diferenciar segun su largo de hoja, o su diámetro de tronco en edad adulta, a continuación vemos el qqplot, shapiro test e histograma de cada uno de los caracteres. ¿Que puede decir sobre los supuestos de un ANOVA para cada caso? ¿Se puede hacer una ANOVA para cada uno de estos caracteres?
+
+```{r}
+library(tidyverse)
+library(broom) 
+library(gridExtra)
+data(iris)
+set.seed(3)
+df <- data.frame(Largo.de.hoja = rnorm(1000, mean = 30, sd = 2), Diametro.de.tronco = rexp(1000, 10))
+
+Hoja <- ggplot(df, aes(sample = Largo.de.hoja)) + geom_qq() + ggtitle("Largo de Hoja")
+Tronco <- ggplot(df, aes(sample = Diametro.de.tronco)) + geom_qq() + ggtitle("Diámetro de tronco")
+grid.arrange(Hoja, Tronco, ncol = 2)
+
+test <- rbind(tidy(shapiro.test(df$Largo.de.hoja)), tidy(shapiro.test(df$Diametro.de.tronco)))
+
+test$Caracter <- c("Largo de hoja", ("Diámetro de tronco"))
+
+knitr::kable(test, caption = "Prueba shapiro de normalidad")
+HistHoja <- ggplot(df, aes(x = Largo.de.hoja)) + geom_histogram(bins =nclass.Sturges(df$Largo.de.hoja)) + ggtitle("Largo Hoja")
+HistTronco <- ggplot(df, aes(x = Diametro.de.tronco)) + geom_histogram(bins =nclass.Sturges(df$Diametro.de.tronco)) + ggtitle("Diametro tronco")
+
+grid.arrange(HistHoja, HistTronco, ncol = 2)
+
+```
+
+## Pregunta 2
+
+Queremos ver si los largos de pétalos de las especies *Iris virginica*, *I. versicolor* e *I. setosa* son distintos, al ver el siguiente gráfico y test, ¿Podemos realizar un ANOVA? ¿Son las varianzas distintas?
+
+```{r, fig.height=6}
+ggplot(iris, aes(x = Species, y = Petal.Length)) + geom_boxplot() + geom_jitter(aes(color = ))
+knitr::kable(tidy(bartlett.test(Petal.Length~Species, data=iris)), caption = "Test de bartlett de homogeneidad de varianzas")
+```
+

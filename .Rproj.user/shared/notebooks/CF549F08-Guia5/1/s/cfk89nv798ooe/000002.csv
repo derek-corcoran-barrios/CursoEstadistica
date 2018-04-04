@@ -1,0 +1,5 @@
+"0","data(""mtcars"")"
+"0","mt <- mtcars"
+"0","mt$am <- ifelse(mtcars$am  == 0, ""automatico"", ""manual"")"
+"0","mt <- as.data.frame(mt)"
+"0","ggplot(mt, aes(x = am, y = mpg)) + geom_violin()"

@@ -1,0 +1,3 @@
+"0","Residuales <- ANOVA.Iris$residuals"
+"0","library(broom)"
+"0","Resultados <- augment(ANOVA.Iris)"

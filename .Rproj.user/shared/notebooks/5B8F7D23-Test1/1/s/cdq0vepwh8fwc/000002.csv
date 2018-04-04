@@ -1,0 +1,5 @@
+"0","set.seed(2018)"
+"0","Muestra <- sample_n(EducacionChile, size = 100) %>% group_by(EducacionChile, Administration) %>% summarise(PromedioPSU = weighted.mean(Average.PSU, Number.of.records), SD.PSU = sd(Average.PSU), N = n())"
+"2","Error in grouped_df_impl(data, unname(vars), drop) : 
+  Column `EducacionChile` is unknown
+"

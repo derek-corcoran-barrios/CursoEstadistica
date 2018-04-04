@@ -1,0 +1,28 @@
+---
+title: "Control 3"
+author: "Derek Corcoran"
+date: "March 28, 2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+suppressMessages(suppressWarnings(library(tidyverse, quietly = TRUE)))
+```
+
+
+## Pregunta 1
+
+La cervecería artesanal **Turbeer** esta probando un nuevo metodo de embotellado que promete ser mas preciso y barato que el que ya estaban utilizando, el dueño de esta cervecería quien sabe de estadística decide hacer un test para determinar si esto es cierto o no, para esto realiza dos pruebas:
+
+1. En la etiqueta de las botellas de **Turbeer**, aparece que el volumen de cerveza en la botella es de 473 ml, el Servicio Nacional del Consumidor exige que en productos bebestibles no hayan diferencias de mas de 3 ml entre el volumen que aparece en la etiqueta y el volumen real. Para esto se decide hacer una prueba t para compararla con la media teórica de 473 ml vs lo obtenido con la nueva maquina para embotellar la cerveza.
+
+¿Que tipo de prueba se debe hacer de una o dos colas? Justifique su respuesta
+
+2. Para comparar si el consumo de la nueva maquina es menor a la anterior, se decide que cada maquina embotelle 100 cervezas, y medir posteriormente si el precio es efectivamente menor basado en el consumo de KW/hora de enegía.
+
+¿Que tipo de prueba se debe hacer de una o dos colas? Justifique su respuesta
+
+3. En el experimento anterior se determina que no hay diferencias significativas en el costo de producir cerveza con ambas maquinas. Se establece un nivel de $\alpha$ = a 0.01 y se calcula a posteriori un $\beta$ de 0.75.
+
+¿Que significan esos valores en este caso? explique
