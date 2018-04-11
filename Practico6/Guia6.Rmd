@@ -1,0 +1,189 @@
+---
+title: "Comparaciones posthoc y diseños anidados"
+date: "March 31, 2018"
+output:
+  pdf_document:
+    fig_caption: yes
+    keep_tex: yes
+    toc: yes
+bibliography: Pract6.bib
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+suppressMessages(suppressWarnings(library(tidyverse, quietly = TRUE)))
+```
+
+## Comparaciones posthoc
+
+Como ya vimos en los prácticos anteriores, un ANOVA sólo puede decirnos si hay diferencias entre grupos, sin embargo no nos dira entre que grupos hay diferencias, es para esto que existen las pruebas posthoc. En el práctico de hoy veremos dos tipos de comparaciones posthoc, la prueba honesta de diferencias significativas de Tukey (función `TukeyHSD` en R), y los ajustes de valores de p para comparaciones multiples (función `pairwise.t.test` en R), de las cuales la de Bonferroni es la más habitual.
+
+### Prueba honesta de diferencias significativas de Tukey
+
+#### Ejemplo ancho de spealo en el genero Iris
+
+Como vimos en nuestro ejemplo de la guía número 3 (Análisis exploratorio y el primer ANOVA), el ANOVA para determinar si hay diferencias en el ancho de sépalo entre las diferentes especies del genero *Iris*, son significativas:
+
+```{r, echo = TRUE}
+summary(aov(Sepal.Width ~ Species, data = iris))
+```
+
+Pero este análisis no nos dice en tre que especies encontramos estas diferencias, para esto, podemos realizar una prueba honesta de diferencias significativas de Tukey, para esto utilizamos la función `TukeyHSD` y usamos como argumento un ANOVA ya ajustado
+
+```{r, echo = TRUE}
+AnovaSepalo <- aov(Sepal.Width ~ Species, data = iris)
+TukeyHSD(AnovaSepalo)
+```
+
+### Ajustes de valores de p para comparaciones multiples
+
+#### Ajuste de Bonferroni
+
+Cuando realizamos multiples comparaciones pareadas entre grupos, la probabilidad de encontrar diferencias significativas cuando no los hay (error tipo I), aumenta a una tasa dada por la siguiente fórmula:
+
+$$\alpha_{ajustado} = 1 - (1 -\alpha)^n$$
+Donde $\alpha$ es la probabilidad de cometer un error tipo I que estamos dispuestos a aceptar (tipicamente 0.05), y $n$ es el numero de pruebas independientes a realizar.
+
+Con esto según el ajuste de Bonferroni, nuestro p critico para determinar diferencias significativas cambia segun la siguiente fórmula [@tukey1977some]
+
+$$p-critico_{ajustado} = 1 - (1 -\alpha)^{1/n}$$
+El ajuste de Bonferroni, sin embargo al disminuir los errores de tipo I, aumenta los errores de tipo II [@morgan2007p]. En ese sentido, la función de R `pairwise.t.test`, nos permite utilizar varios ajustes menos conservadores incluyendo los de Holm (1979), Hochberg (1988), Hommel (1988), Benjamini & Hochberg (1995) o el de Benjamini & Yekutieli (2001) 
+
+#### Ejemplo ancho de spealo en el genero Iris
+
+Volviendo al mismo ejemplo que usamos en la prueba de Tukey, mostraremos los valores de p determinados para comparaciones multiples de el ancho de sepalo sin ajuste y con diversos ajustes que encontramos en el la función `pairwise.t.test`
+
+##### Sin ajuste
+
+```{r, echo=TRUE}
+pairwise.t.test(x = airquality$Ozone, g = airquality$Month, p.adj = "none")
+```
+
+##### Ajuste de Bonferroni
+
+```{r, echo=TRUE}
+pairwise.t.test(x = airquality$Ozone, g = airquality$Month, p.adj = "bonf")
+```
+
+##### Ajuste de Holm
+
+```{r, echo=TRUE}
+pairwise.t.test(x = airquality$Ozone, g = airquality$Month, p.adj = "holm")
+```
+
+##### Ajuste de Hommel
+
+```{r, echo=TRUE}
+pairwise.t.test(x = airquality$Ozone, g = airquality$Month, p.adj = "hommel")
+```
+
+##### Diferencias
+
+Se observa como sin ajustar hay 6 pares de meses que tienen diferencias, en contraste con 4 pares de meses con el ajuste de Bonferroni, y 5 con los otros métodos de ajuste de valor de p.
+
+## Diseños anidados
+
+Los diseños anidados ocurren cuando queremos estudiar el efecto de un factor, pero dentro de las muestras existe un segundo factor que puede afectar nuestros análisis, por ejemplo si volvemos a el caso en 
+
+
+
+```{r}
+Co2Real <- CO2 %>% group_by(Plant, Type, Treatment) %>% summarise(PromedioCO2 = mean(uptake))
+Co2Promedio <- Co2Real %>%  group_by(Type, Treatment) %>% summarise(CO2 = mean(PromedioCO2), SD =sd(PromedioCO2))
+ggplot(Co2Promedio, aes(x = Treatment, y = CO2)) + geom_line(aes(color = Type)) + geom_point(aes(color = Type)) + geom_errorbar(aes(ymin = CO2 - SD, ymax = CO2 + SD, color = Type), width = 0.1)
+```
+
+
+```{r}
+set.seed(2018)
+Aa <- data.frame(Resp = rnorm(30, mean = 30, sd = 4), Var1 = "A", Var2 ="a")
+set.seed(2017)
+Ab <- data.frame(Resp = rnorm(30, mean = 30, sd = 4), Var1 = "A", Var2 ="b")
+set.seed(2018)
+Ba <- data.frame(Resp = rnorm(30, mean = 20, sd = 4), Var1 = "B", Var2 ="a")
+set.seed(2017)
+Bb <- data.frame(Resp = rnorm(30, mean = 20, sd = 4), Var1 = "B", Var2 ="b")
+set.seed(2018)
+Ca <- data.frame(Resp = rnorm(30, mean = 15, sd = 4), Var1 = "C", Var2 ="a")
+set.seed(2017)
+Cb  <- data.frame(Resp = rnorm(30, mean = 15, sd = 4), Var1 = "C", Var2 ="b")
+Var1 <- list(Aa,Ba,Ca,Ab,Bb,Cb)
+Var1 <- do.call(rbind, Var1)
+
+SummVar1 <-  Var1 %>%  group_by(Var2, Var1) %>% summarise(MeanResp = mean(Resp), SD =sd(Resp))
+
+plot1 <- ggplot(SummVar1, aes(x = Var1, y = MeanResp)) + geom_line(aes(color = Var2)) + geom_point(aes(color = Var2)) + geom_errorbar(aes(ymin = MeanResp - SD, ymax = MeanResp + SD, color = Var2), width = 0.1) + theme_classic() + ylim(c(10,35))
+
+
+summary(aov(Resp ~ Var1 + Var2 + Var1:Var2, data = Var1))
+
+set.seed(2018)
+Aa <- data.frame(Resp = rnorm(30, mean = 30, sd = 4), Var1 = "A", Var2 ="a")
+set.seed(2017)
+Ab <- data.frame(Resp = rnorm(30, mean = 20, sd = 4), Var1 = "A", Var2 ="b")
+set.seed(2016)
+Ba <- data.frame(Resp = rnorm(30, mean = 30, sd = 4), Var1 = "B", Var2 ="a")
+set.seed(2018)
+Bb <- data.frame(Resp = rnorm(30, mean = 20, sd = 4), Var1 = "B", Var2 ="b")
+set.seed(2017)
+Ca <- data.frame(Resp = rnorm(30, mean = 30, sd = 4), Var1 = "C", Var2 ="a")
+set.seed(2016)
+Cb  <- data.frame(Resp = rnorm(30, mean = 20, sd = 4), Var1 = "C", Var2 ="b")
+Var2 <- list(Aa,Ba,Ca,Ab,Bb,Cb)
+Var2 <- do.call(rbind, Var2)
+
+SummVar2 <-  Var2 %>%  group_by(Var2, Var1) %>% summarise(MeanResp = mean(Resp), SD =sd(Resp))
+
+plot2 <- ggplot(SummVar2, aes(x = Var1, y = MeanResp)) + geom_line(aes(color = Var2)) + geom_point(aes(color = Var2)) + geom_errorbar(aes(ymin = MeanResp - SD, ymax = MeanResp + SD, color = Var2), width = 0.1) + theme_classic() + ylim(c(10,35))
+
+summary(aov(Resp ~ Var1 + Var2 + Var1:Var2, data = Var2))
+
+set.seed(2018)
+Aa <- data.frame(Resp = rnorm(30, mean = 30, sd = 4), Var1 = "A", Var2 ="a")
+set.seed(2017)
+Ab <- data.frame(Resp = rnorm(30, mean = 30, sd = 4), Var1 = "A", Var2 ="b")
+set.seed(2016)
+Ba <- data.frame(Resp = rnorm(30, mean = 30, sd = 4), Var1 = "B", Var2 ="a")
+set.seed(2018)
+Bb <- data.frame(Resp = rnorm(30, mean = 20, sd = 4), Var1 = "B", Var2 ="b")
+set.seed(2017)
+Ca <- data.frame(Resp = rnorm(30, mean = 30, sd = 4), Var1 = "C", Var2 ="a")
+set.seed(2016)
+Cb  <- data.frame(Resp = rnorm(30, mean = 15, sd = 4), Var1 = "C", Var2 ="b")
+Var12 <- list(Aa,Ba,Ca,Ab,Bb,Cb)
+Var12 <- do.call(rbind, Var12)
+
+SummVar12 <-  Var12 %>%  group_by(Var2, Var1) %>% summarise(MeanResp = mean(Resp), SD =sd(Resp))
+
+plot12 <- ggplot(SummVar12, aes(x = Var1, y = MeanResp)) + geom_line(aes(color = Var2)) + geom_point(aes(color = Var2)) + geom_errorbar(aes(ymin = MeanResp - SD, ymax = MeanResp + SD, color = Var2), width = 0.1) + theme_classic() + ylim(c(10,35))
+
+summary(aov(Resp ~ Var1 + Var2 + Var1:Var2, data = Var12))
+
+set.seed(2018)
+Aa <- data.frame(Resp = rnorm(30, mean = 15, sd = 4), Var1 = "A", Var2 ="a")
+set.seed(2017)
+Ab <- data.frame(Resp = rnorm(30, mean = 30, sd = 4), Var1 = "A", Var2 ="b")
+set.seed(2016)
+Ba <- data.frame(Resp = rnorm(30, mean = 20, sd = 4), Var1 = "B", Var2 ="a")
+set.seed(2018)
+Bb <- data.frame(Resp = rnorm(30, mean = 20, sd = 4), Var1 = "B", Var2 ="b")
+set.seed(2017)
+Ca <- data.frame(Resp = rnorm(30, mean = 30, sd = 4), Var1 = "C", Var2 ="a")
+set.seed(2016)
+Cb  <- data.frame(Resp = rnorm(30, mean = 15, sd = 4), Var1 = "C", Var2 ="b")
+Var21 <- list(Aa,Ba,Ca,Ab,Bb,Cb)
+Var21 <- do.call(rbind, Var21)
+
+SummVar21 <-  Var21 %>%  group_by(Var2, Var1) %>% summarise(MeanResp = mean(Resp), SD =sd(Resp))
+
+plot21 <-ggplot(SummVar21, aes(x = Var1, y = MeanResp)) + geom_line(aes(color = Var2)) + geom_point(aes(color = Var2)) + geom_errorbar(aes(ymin = MeanResp - SD, ymax = MeanResp + SD, color = Var2), width = 0.1) + theme_classic() + ylim(c(10,35))
+
+summary(aov(Resp ~ Var1 + Var2 + Var1:Var2, data = Var21))
+
+library(gridExtra)
+grid.arrange(plot1, plot2, plot12, plot21)
+
+```
+
+
+## Referencias

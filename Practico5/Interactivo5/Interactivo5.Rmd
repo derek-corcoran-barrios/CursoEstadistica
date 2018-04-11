@@ -12,8 +12,8 @@ library(learnr)
 knitr::opts_chunk$set(echo = FALSE)
 suppressMessages(suppressWarnings(library(tidyverse, quietly = TRUE)))
 data("airquality")
-BeerDark <- read_csv("https://archive.org/download/BeerDark/BeerDark.csv")
-#BeerDark <- read_csv("/home/derek/Documents/BioestadisticaII/Practico5/BeerDark.csv")
+#BeerDark <- read_csv("https://archive.org/download/BeerDark/BeerDark.csv")
+BeerDark <- read_csv("/home/derek/Documents/BioestadisticaII/Practico5/BeerDark.csv")
 ```
 
 ## Pruebas de una muestra

@@ -1,0 +1,119 @@
+---
+title: "Comparaciones posthoc y diseños anidados"
+output:
+  learnr::tutorial:
+    progressive: true
+runtime: shiny_prerendered
+---
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  TeX: { 
+      equationNumbers: { 
+            autoNumber: "all",
+            formatNumber: function (n) {return n}
+      } 
+  }
+});
+</script>
+
+```{r setup, include=FALSE}
+library(learnr)
+knitr::opts_chunk$set(echo = FALSE)
+suppressMessages(suppressWarnings(library(tidyverse, quietly = TRUE)))
+```
+
+
+## Comparaciones posthoc
+
+### Probabilidad de que algo ocurra
+
+La probabilidad de que al lanzar un dado obtengamos un 6 es de 1/6, en R lo podemos asignar de la siguiente froma
+
+```{r, echo = TRUE, eval = FALSE}
+p_dado6 <- 1/6
+```
+
+Cuando calculamos la probabildad de que dos eventos ocurran simultaneamente, simplemente multiplicamos la probabilidad de que ambos eventos ocurran independiente. Con eso en cuenta cual es la probabilidad de que al lanzar tres veces un dado, obtengamos 6 las tres veces? 
+
+```{r p_dado, exercise=TRUE, exercise.lines = 5}
+p_dado6 <- 1/6
+```
+
+### Probabilidad de que algo no ocurra
+
+La probabilidad de que un evento ocurra, por ejemplo obtener un 6 en un dado $p(6)$ + la probabilidad que que sea cualquier otro valor $p(1-5)$ simpre debe ser uno, esto es:
+
+$$p(6) + p(1-5) = 1$$
+Esto implica que la probabilidad de que al lanzar un dado el valor obtenido no sea 6 es:
+
+```{r, echo = TRUE, eval = FALSE}
+p_dadoNo6 <- (1 - 1/6)
+```
+
+Considerando esto calcula cual es la probabilidad que al lanzar cinco veces un dado, nunca obtengamos el valor de 6
+
+```{r p_dadoNo, exercise=TRUE, exercise.lines = 5}
+p_dadoNo6 <- (1 - 1/6)
+```
+
+### Probabilidad de que algo ocurra al menos una vez
+
+Como vimos en los casos anteriores, la probabilidad de que un evento $A$ no ocurra en varios intentos es:
+
+$$(1-p(A))^n$$
+Donde $n$ es la cantidad de eventos independientes a testear. Como lo opuesto a que a no ocurra es que ocurra al menos una vez, y las probabilidades simpre deben ser complementarias, la probabilidad de que un evento $A$ ocurra al menos una vez es:
+
+$$1 - (1-p(A))^n$$
+
+Considerando esto calcule cual es la probabilidad de que al lanzar un dado cuatro veces al menos una vez obtengamos un valor de 6
+
+```{r p_dado_6_unavez, exercise=TRUE, exercise.lines = 5}
+p_dado6 <- 1/6
+```
+
+### Conección con corrección de Bonferroni, Tukey, y otros ajustes de valores de p para comparaciones multiples
+
+Cuando designamos un valor de \alpha de 0.05 esto es equivalente a tener una probabilidad de un 5% de cometer un error de tipo 1 al realizar una comparación independiente, esto es un $p = 0.05$
+
+Considerando la ecuación 6, ¿cual es la probabilidad de que al hacer 6 comparaciones independientes podamos cometer un error de tipo 1?
+
+```{r Bonf, exercise=TRUE, exercise.lines = 5}
+p_error <- 0.05
+```
+
+### Correccion de Bonferroni y otras
+
+Debido a lo anterior la corrección de Bonferroni ajusta el valor de p para poder disminuir el alza de errores tipo 1, para eso en R se ocupa la función `pairwise.t.test` con los argumentos:
+
+* **x:** Vector de valores respuestas
+* **g:** Vector de variable de agrupamiento para x
+* **p.adjust.method:** El método a utilizar para ajustar el valor de p, las opciones son
+    + "none"
+    + "bonferroni"
+    + "holm"
+    + "hochberg"
+    + "hommel"
+    + "BH"
+    + "BY"
+    + "fdr"
+
+Esto es si hacemos un ANOVA para determinar si hay diferencias entre la concentración de ozono en la troposfera entre los distintos meses de la base de datos airquality, veremos que hay diferencias:
+
+```{r, echo = TRUE}
+summary(aov(Ozone ~ Month, data = airquality))
+```
+
+Para revisar entre que meses hay diferencias podemos usar la función antes discutida para ver si hay diferencias
+
+```{r, echo=TRUE}
+pairwise.t.test(x = airquality$Ozone, g = airquality$Month, p.adj = "none")
+```
+
+Modifique el código a continuación con los diferentes ajustes para determinar cual
+
+```{r p_adj, exercise=TRUE, exercise.lines = 5}
+pairwise.t.test(x = airquality$Ozone, g = airquality$Month, p.adj = "none")
+```
+
+
+## ANOVA anidado

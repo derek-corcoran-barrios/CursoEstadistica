@@ -14,7 +14,7 @@
 Prueba t de Student
 ========================================================
 author: Derek Corcoran
-date: "04/04, 2018"
+date: "07/04, 2018"
 autosize: true
 transition: rotate
 
@@ -199,180 +199,28 @@ incremental:true
 class: small-code
 
 
-```r
-BeerDark <- read_csv("https://archive.org/download/BeerDark/BeerDark.csv")
-t.test(Amargor ~ Estilo, var.equal =TRUE, data = BeerDark)
-```
-
-```
-
-	Two Sample t-test
-
-data:  Amargor by Estilo
-t = -21.233, df = 6409, p-value < 2.2e-16
-alternative hypothesis: true difference in means is not equal to 0
-95 percent confidence interval:
- -16.70647 -13.88231
-sample estimates:
-mean in group Porter  mean in group Stout 
-            37.80220             53.09659 
-```
-
-Supuestos de prueba t
-==========
-incremental:true
-class: small-code
-
-* **Independencia de las observaciones**
-* **Distribución normal de los datos en cada grupo**
-* Homogeneidad de varianza
-
-Normalidad
-============
-incremental:true
-class: small-code
-
-
-```r
-hist(faithful$waiting, xlab = "Minutos de espera entre erupciones")
-```
-
-![plot of chunk unnamed-chunk-8](Practico5-figure/unnamed-chunk-8-1.png)
-
-Normalidad
-============
-incremental:true
-class: small-code
-
-
-```r
-qqnorm(faithful$waiting)
-```
-
-![plot of chunk unnamed-chunk-9](Practico5-figure/unnamed-chunk-9-1.png)
-
-Normalidad
-============
-incremental:true
-class: small-code
-
-
-```r
-shapiro.test(faithful$waiting)
-```
-
-```
-
-	Shapiro-Wilk normality test
-
-data:  faithful$waiting
-W = 0.92215, p-value = 1.015e-10
-```
-
-Alternativa Mann-Whitney
-=====================
-incremental:true
-class: small-code
-
-* Igual que `t.test` pero `wilcox.test`
-
-
-```r
-data("faithful")
-wilcox.test(x = faithful$waiting, mu = 60, alternative = "two.sided")
-```
-
-```
-
-	Wilcoxon signed rank test with continuity correction
-
-data:  faithful$waiting
-V = 31048, p-value < 2.2e-16
-alternative hypothesis: true location is not equal to 60
-```
-
-Prueba dos muestras dividir en clases
-===========
-class: small-code
 
 
 
-```r
-manuales <- mtcars %>% filter(am == 1)
-hist(manuales$mpg, xlim = c(10,35), ylim = c(0,5))
-```
-
-![plot of chunk unnamed-chunk-12](Practico5-figure/unnamed-chunk-12-1.png)
-
-***
 
 
-```r
-autos <- mtcars %>% filter(am == 0)
-hist(autos$mpg, xlim = c(10,35), ylim = c(0,5))
-```
-
-![plot of chunk unnamed-chunk-13](Practico5-figure/unnamed-chunk-13-1.png)
-
-Prueba dos muestras dividir en clases
-===========
-class: small-code
 
 
-```r
-qqnorm(manuales$mpg)
-```
-
-![QQplot de eficiencia de vehiculos con cambios manuales](Practico5-figure/unnamed-chunk-14-1.png)
-
-Homogeneidad de varianza
-=========
-class: small-code
 
 
-```r
-ggplot(mtcars, aes(x = factor(am), y = mpg)) + geom_boxplot()
-```
-
-![plot of chunk unnamed-chunk-15](Practico5-figure/unnamed-chunk-15-1.png)
-
-***
 
 
-```r
-bartlett.test(mpg ~ am, data = mtcars)
-```
+
+
+
+
+
+
+
+
+
+
 
 ```
-
-	Bartlett test of homogeneity of variances
-
-data:  mpg by am
-Bartlett's K-squared = 3.2259, df = 1, p-value = 0.07248
+Error in open.connection(con, "rb") : Could not resolve host: archive.org
 ```
-
-
-Mann-Whitney 2 muestras
-=====================
-
-
-```r
-wilcox.test(mpg ~ am, data = mtcars)
-```
-
-```
-
-	Wilcoxon rank sum test with continuity correction
-
-data:  mpg by am
-W = 42, p-value = 0.001871
-alternative hypothesis: true location shift is not equal to 0
-```
-
-Ejercicio 3
-==============
-incremental:true
-
-* Evalue basado en histograma, qqplot y test de shapiro si se debe reevaluar la hipótesis para los meses de julio y agosto y si es necesario haga una nueva prueba
-
-* Evalúe si es necesario revaluar la hipotesis de que el amargor es distinto entre ambos estilos de cerveza y si es necesario haga una nueva prueba
