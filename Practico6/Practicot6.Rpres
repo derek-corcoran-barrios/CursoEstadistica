@@ -1,0 +1,203 @@
+<style>
+.reveal h1, .reveal h2, .reveal h3 {
+  word-wrap: normal;
+  -moz-hyphens: none;
+}
+</style>
+
+<style>
+.small-code pre code {
+  font-size: 1em;
+}
+</style>
+
+Comparaciones posthoc y diseños anidados
+========================================================
+author: Derek Corcoran
+date: "`r format(Sys.time(), '%d/%m, %Y')`"
+autosize: true
+transition: rotate
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+suppressMessages(suppressWarnings(library(tidyverse, quietly = TRUE)))
+```
+
+=====
+
+Volvamos a lo básico
+
+Probabilidad de que algo ocurra
+=========
+incremental:true
+
+Probabilidad de un 6
+
+```{r, echo = TRUE, eval = FALSE}
+p_dado6 <- 1/6
+```
+
+***
+
+```{r, echo = FALSE}
+knitr::include_graphics("Dice.png")
+```
+
+Probabilidad de que dos eventos ocurran
+=========
+incremental:true
+class: small-code
+
+* $p(A) \cap p(B) = p(A) * p(B)$
+* ¿Cuál es la probabilidad de que al lanzar tres veces un dado, obtengamos 6 las tres veces? 
+
+```{r, echo = TRUE, eval = FALSE}
+p_dado6 <- 1/6
+```
+
+```{r, echo = FALSE}
+knitr::include_graphics("Sixes.jpeg")
+```
+
+Probabilidad de que algo no ocurra
+==========
+incremental:true
+
+$$p(6) + p(1,5) = 1$$
+
+```{r, echo = TRUE, eval = FALSE}
+p_dadoNo6 <- (1 - 1/6)
+```
+
+Probabilidad de que dos eventos no ocurran
+=========
+incremental:true
+
+* Cual es la probabilidad que al lanzar cinco veces un dado, nunca obtengamos el valor de 6
+
+```{r, echo = TRUE}
+p_dadoNo6 <- (1 - 1/6)
+```
+
+Probabilidad de que algo ocurra al menos una vez
+==========
+incremental:true
+
+* La probabilidad de que un evento $A$ no ocurra en $n$ intentos es:
+
+$$(1-p(A))^n$$
+
+* ¿Que es el complemento a esto?
+
+$$1 - (1-p(A))^n$$
+
+* Probabilidad de que algo ocurra al menos una vez
+
+
+Probabilidad de que algo ocurra al menos una vez
+==========
+incremental:true
+
+* Cual es la probabilidad de que al lanzar un dado cuatro veces al menos una vez obtengamos un valor de 6
+
+```{r, echo = TRUE}
+p_dado6 <- 1/6
+```
+
+¿Bonferroni?
+======
+incremental:true
+
+* $\alpha = 0.05$ 
+* $p = 0.05$
+* Error tipo 1 = 95%
+
+Considerando la ecuación 6, ¿cual es la probabilidad de que al hacer 6 comparaciones independientes podamos cometer un error de tipo 1?
+
+```{r, echo = TRUE}
+p_error <- 0.05
+```
+
+Correccion de Bonferroni y otras
+======
+incremental:true
+
+* Bonferroni ajusta el valor de p para poder disminuir el alza de errores tipo 1 * Función `pairwise.t.test` con los argumentos:
+* **x:** Vector de valores respuestas
+* **g:** Vector de variable de agrupamiento para x
+* **p.adjust.method:** El método a utilizar para ajustar el valor de p, las opciones son
+    + "none"
+    + "bonferroni"
+    + "holm"
+    + "hochberg"
+    + "hommel"
+    + "BH"
+    + "BY"
+    + "fdr"
+
+
+Ejemplo
+======
+incremental:true
+class: small-code
+
+```{r, echo = TRUE}
+summary(aov(Ozone ~ Month, data = airquality))
+```
+
+
+```{r, echo=TRUE}
+pairwise.t.test(x = airquality$Ozone, g = airquality$Month, p.adj = "none")
+```
+
+Recreo
+=========
+
+ANOVA de dos vias
+==========
+incremental:true
+
+* Dos factores y su interacción
+
+```{r, echo = FALSE}
+Co2Real <- CO2 %>% group_by(Plant, Type, Treatment) %>% summarise(PromedioCO2 = mean(uptake))
+Co2Promedio <- Co2Real %>%  group_by(Type, Treatment) %>% summarise(CO2 = mean(PromedioCO2), SD =sd(PromedioCO2))
+ggplot(Co2Promedio, aes(x = Treatment, y = CO2)) + geom_line(aes(color = Type)) + geom_point(aes(color = Type)) + geom_errorbar(aes(ymin = CO2 - SD, ymax = CO2 + SD, color = Type), width = 0.1) + theme_classic() + theme(legend.position="bottom")
+```
+
+***
+
+* ANOVA de dos vias, en el cual consideramos el efecto de cada variable de forma independiente y su interacción.
+
+Interaccion
+==============
+
+* Variable 1 es la variable "principal" y la variable 2 es la variable anidada.
+
+```{r, echo = FALSE}
+set.seed(2018)
+Aa <- data.frame(Resp = rnorm(30, mean = 30, sd = 2), Var1 = "A", Var2 ="a")
+set.seed(2017)
+Ab <- data.frame(Resp = rnorm(30, mean = 23, sd = 2), Var1 = "A", Var2 ="b")
+set.seed(2016)
+Ba <- data.frame(Resp = rnorm(30, mean = 25, sd = 2), Var1 = "B", Var2 ="a")
+set.seed(2018)
+Bb <- data.frame(Resp = rnorm(30, mean = 18, sd = 2), Var1 = "B", Var2 ="b")
+set.seed(2017)
+Ca <- data.frame(Resp = rnorm(30, mean = 20, sd = 2), Var1 = "C", Var2 ="a")
+set.seed(2016)
+Cb  <- data.frame(Resp = rnorm(30, mean = 13, sd = 2), Var1 = "C", Var2 ="b")
+Varpar <- list(Aa,Ba,Ca,Ab,Bb,Cb)
+Varpar<- do.call(rbind, Varpar)
+DataNest <- Varpar
+
+SummVarpar <-  Varpar %>%  group_by(Var2, Var1) %>% summarise(MeanResp = mean(Resp), SD =sd(Resp))
+
+ggplot(SummVarpar, aes(x = Var1, y = MeanResp)) + geom_line(aes(color = Var2)) + geom_point(aes(color = Var2)) + geom_errorbar(aes(ymin = MeanResp - SD, ymax = MeanResp + SD, color = Var2), width = 0.1) + theme_classic() + theme(legend.position="bottom") + ylab("Resp")
+```
+
+Ejemplo
+========
+```{r, echo = TRUE}
+summary(aov(Resp ~ Var1 + Var2 + Var1:Var2, data = Varpar))
+```

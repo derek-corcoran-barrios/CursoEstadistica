@@ -3,6 +3,7 @@ title: "Comparaciones posthoc y diseños anidados"
 output:
   learnr::tutorial:
     progressive: true
+    fig_caption: yes
 runtime: shiny_prerendered
 ---
 <script type="text/x-mathjax-config">
@@ -41,9 +42,9 @@ p_dado6 <- 1/6
 
 ### Probabilidad de que algo no ocurra
 
-La probabilidad de que un evento ocurra, por ejemplo obtener un 6 en un dado $p(6)$ + la probabilidad que que sea cualquier otro valor $p(1-5)$ simpre debe ser uno, esto es:
+La probabilidad de que un evento ocurra, por ejemplo obtener un 6 en un dado $p(6)$ + la probabilidad que que sea cualquier otro valor $p(1,5)$ simpre debe ser uno, esto es:
 
-$$p(6) + p(1-5) = 1$$
+$$p(6) + p(1,5) = 1$$
 Esto implica que la probabilidad de que al lanzar un dado el valor obtenido no sea 6 es:
 
 ```{r, echo = TRUE, eval = FALSE}
@@ -71,7 +72,7 @@ Considerando esto calcule cual es la probabilidad de que al lanzar un dado cuatr
 p_dado6 <- 1/6
 ```
 
-### Conección con corrección de Bonferroni, Tukey, y otros ajustes de valores de p para comparaciones multiples
+### Conexión con corrección de Bonferroni, Tukey, y otros ajustes de valores de p para comparaciones multiples
 
 Cuando designamos un valor de \alpha de 0.05 esto es equivalente a tener una probabilidad de un 5% de cometer un error de tipo 1 al realizar una comparación independiente, esto es un $p = 0.05$
 
@@ -109,11 +110,232 @@ Para revisar entre que meses hay diferencias podemos usar la función antes disc
 pairwise.t.test(x = airquality$Ozone, g = airquality$Month, p.adj = "none")
 ```
 
-Modifique el código a continuación con los diferentes ajustes para determinar cual
+Modifique el código a continuación con los diferentes ajustes para determinar entre que meses hay diferencias de acuerdo a los distintos ajustes
 
 ```{r p_adj, exercise=TRUE, exercise.lines = 5}
 pairwise.t.test(x = airquality$Ozone, g = airquality$Month, p.adj = "none")
 ```
 
+#### Prueba honesta de Tukey
 
-## ANOVA anidado
+Otra prueba que permite ajustar los valores de p para multiples comparaciones el la prueba honesta de Tukey, la cual se realiza utilizando la función `TukeyHSD` y adentro poniendo como argumento un ANOVA ya ajustado, complete el siguiente código
+
+```{r Tukey, exercise=TRUE, exercise.lines = 5}
+AnovaSepalo <- aov(Sepal.Width ~ Species, data = iris)
+summary(AnovaSepalo)
+TukeyHSD()
+```
+
+
+## ANOVA de dos vías
+
+### Introducción
+
+Los diseños de dos vias (anidado, factorial, etc) ocurren cuando queremos estudiar el efecto de un factor, pero dentro de las muestras existe un segundo factor que puede afectar nuestros análisis, por ejemplo si volvemos a ver la base de datos en la que trabajamos hace un par de semanas de la captación de $CO_2$ de plantas enfriadas o no enfriadas de dos subespecies de la planta *Echinochloa crus-galli*: Como vemos en la figura 1 no es claro si los tratamientos de enfriamiento (variable principal) afecta de la misma manera a ambas subespecies, es por esto, que realizamos un ANOVA de dos vias, en el cual consideramos el efecto de cada variable de forma independiente y su interacción.
+
+```{r}
+Co2Real <- CO2 %>% group_by(Plant, Type, Treatment) %>% summarise(PromedioCO2 = mean(uptake))
+knitr::kable(Co2Real, caption = "Captación de plantas enfriadas y no enfriadas en dos subespecies")
+```
+
+```{r, fig.cap="Figura 1: Captación de plantas enfriadas y no enfriadas en dos subespecies"}
+Co2Promedio <- Co2Real %>%  group_by(Type, Treatment) %>% summarise(CO2 = mean(PromedioCO2), SD =sd(PromedioCO2))
+ggplot(Co2Promedio, aes(x = Treatment, y = CO2)) + geom_line(aes(color = Type)) + geom_point(aes(color = Type)) + geom_errorbar(aes(ymin = CO2 - SD, ymax = CO2 + SD, color = Type), width = 0.1) + theme_classic() + theme(legend.position="bottom")
+```
+
+Como ejemplo veremos varios casos de un ejemplo hipótetico en el cual la Variable 1 es la variable "principal" y la variable 2 es la variable anidada.
+
+```{r, fig.cap="Figura 2: Interacción de 2 variables en simulación"}
+set.seed(2018)
+Aa <- data.frame(Resp = rnorm(30, mean = 30, sd = 2), Var1 = "A", Var2 ="a")
+set.seed(2017)
+Ab <- data.frame(Resp = rnorm(30, mean = 23, sd = 2), Var1 = "A", Var2 ="b")
+set.seed(2016)
+Ba <- data.frame(Resp = rnorm(30, mean = 25, sd = 2), Var1 = "B", Var2 ="a")
+set.seed(2018)
+Bb <- data.frame(Resp = rnorm(30, mean = 18, sd = 2), Var1 = "B", Var2 ="b")
+set.seed(2017)
+Ca <- data.frame(Resp = rnorm(30, mean = 20, sd = 2), Var1 = "C", Var2 ="a")
+set.seed(2016)
+Cb  <- data.frame(Resp = rnorm(30, mean = 13, sd = 2), Var1 = "C", Var2 ="b")
+Varpar <- list(Aa,Ba,Ca,Ab,Bb,Cb)
+Varpar<- do.call(rbind, Varpar)
+DataNest <- Varpar
+
+SummVarpar <-  Varpar %>%  group_by(Var2, Var1) %>% summarise(MeanResp = mean(Resp), SD =sd(Resp))
+
+ggplot(SummVarpar, aes(x = Var1, y = MeanResp)) + geom_line(aes(color = Var2)) + geom_point(aes(color = Var2)) + geom_errorbar(aes(ymin = MeanResp - SD, ymax = MeanResp + SD, color = Var2), width = 0.1) + theme_classic() + theme(legend.position="bottom") + ylab("Resp")
+```
+
+En la figura 2 vemos como la variable respuesta cambia con la variable 1 (A, B y C son diferentes), y también con la variable 2 (a y b son diferentes). En esta figura además apreciamos que no hay una interacción, entre las variables, lo cual se demuestra por que las lineas son paralelas.
+
+Para poner a prueba esto, usaríamos el siguiente código:
+
+```{r, echo = TRUE}
+summary(aov(Resp ~ Var1 + Var2 + Var1:Var2, data = Varpar))
+```
+
+Donde `Var1:Var2` muestra la interacción. A continuación veremos varios gráficos y ustedes deberán determinar si los efectos de cada Variable y sus interacciones son significativas.
+
+### Caso 1
+
+```{r, cache=TRUE}
+set.seed(2018)
+Aa <- data.frame(Resp = rnorm(30, mean = 30, sd = 4), Var1 = "A", Var2 ="a")
+set.seed(2017)
+Ab <- data.frame(Resp = rnorm(30, mean = 30, sd = 4), Var1 = "A", Var2 ="b")
+set.seed(2018)
+Ba <- data.frame(Resp = rnorm(30, mean = 20, sd = 4), Var1 = "B", Var2 ="a")
+set.seed(2017)
+Bb <- data.frame(Resp = rnorm(30, mean = 20, sd = 4), Var1 = "B", Var2 ="b")
+set.seed(2018)
+Ca <- data.frame(Resp = rnorm(30, mean = 15, sd = 4), Var1 = "C", Var2 ="a")
+set.seed(2017)
+Cb  <- data.frame(Resp = rnorm(30, mean = 15, sd = 4), Var1 = "C", Var2 ="b")
+Var1 <- list(Aa,Ba,Ca,Ab,Bb,Cb)
+Var1 <- do.call(rbind, Var1)
+
+SummVar1 <-  Var1 %>%  group_by(Var2, Var1) %>% summarise(MeanResp = mean(Resp), SD =sd(Resp))
+
+ggplot(SummVar1, aes(x = Var1, y = MeanResp)) + geom_line(aes(color = Var2)) + geom_point(aes(color = Var2)) + geom_errorbar(aes(ymin = MeanResp - SD, ymax = MeanResp + SD, color = Var2), width = 0.1) + theme_classic() + ylim(c(10,35)) + theme(legend.position = "bottom")
+```
+
+```{r quiz1}
+quiz(
+  question("En el gráfico anterior, ¿Que efectos son significativos?",
+    answer("Variable 1", correct = TRUE),
+    answer("Variable 2"),
+    answer("Interacción"),
+    answer("Variable 1, Variable 2 e interacción"),
+    answer("Nada es significativo"),
+    answer("Variable 1 y Variable 2"),
+    answer("Variable 1 e interacción"),
+    answer("Variable 2 e interacción"),
+    allow_retry = TRUE,
+    random_answer_order = TRUE
+  )
+)
+```
+
+### Caso 2
+
+```{r, cache=TRUE}
+set.seed(2018)
+Aa <- data.frame(Resp = rnorm(30, mean = 30, sd = 4), Var1 = "A", Var2 ="a")
+set.seed(2017)
+Ab <- data.frame(Resp = rnorm(30, mean = 30, sd = 4), Var1 = "A", Var2 ="b")
+set.seed(2016)
+Ba <- data.frame(Resp = rnorm(30, mean = 30, sd = 4), Var1 = "B", Var2 ="a")
+set.seed(2018)
+Bb <- data.frame(Resp = rnorm(30, mean = 20, sd = 4), Var1 = "B", Var2 ="b")
+set.seed(2017)
+Ca <- data.frame(Resp = rnorm(30, mean = 30, sd = 4), Var1 = "C", Var2 ="a")
+set.seed(2016)
+Cb  <- data.frame(Resp = rnorm(30, mean = 15, sd = 4), Var1 = "C", Var2 ="b")
+Var12 <- list(Aa,Ba,Ca,Ab,Bb,Cb)
+Var12 <- do.call(rbind, Var12)
+
+SummVar12 <-  Var12 %>%  group_by(Var2, Var1) %>% summarise(MeanResp = mean(Resp), SD =sd(Resp))
+
+ggplot(SummVar12, aes(x = Var1, y = MeanResp)) + geom_line(aes(color = Var2)) + geom_point(aes(color = Var2)) + geom_errorbar(aes(ymin = MeanResp - SD, ymax = MeanResp + SD, color = Var2), width = 0.1) + theme_classic() + ylim(c(10,35))  +  theme(legend.position = "bottom")
+
+```
+
+```{r quiz2}
+quiz(
+  question("En el gráfico anterior, ¿Que efectos son significativos?",
+    answer("Variable 1"),
+    answer("Variable 2"),
+    answer("Interacción"),
+    answer("Variable 1, Variable 2 e interacción", correct = TRUE),
+    answer("Nada es significativo"),
+    answer("Variable 1 y Variable 2"),
+    answer("Variable 1 e interacción"),
+    answer("Variable 2 e interacción"),
+    allow_retry = TRUE,
+    random_answer_order = TRUE
+  )
+)
+```
+
+### Caso 3
+
+```{r, cache=TRUE}
+set.seed(2018)
+Aa <- data.frame(Resp = rnorm(30, mean = 30, sd = 4), Var1 = "A", Var2 ="a")
+set.seed(2017)
+Ab <- data.frame(Resp = rnorm(30, mean = 20, sd = 4), Var1 = "A", Var2 ="b")
+set.seed(2016)
+Ba <- data.frame(Resp = rnorm(30, mean = 30, sd = 4), Var1 = "B", Var2 ="a")
+set.seed(2018)
+Bb <- data.frame(Resp = rnorm(30, mean = 20, sd = 4), Var1 = "B", Var2 ="b")
+set.seed(2017)
+Ca <- data.frame(Resp = rnorm(30, mean = 30, sd = 4), Var1 = "C", Var2 ="a")
+set.seed(2016)
+Cb  <- data.frame(Resp = rnorm(30, mean = 20, sd = 4), Var1 = "C", Var2 ="b")
+Var2 <- list(Aa,Ba,Ca,Ab,Bb,Cb)
+Var2 <- do.call(rbind, Var2)
+
+SummVar2 <-  Var2 %>%  group_by(Var2, Var1) %>% summarise(MeanResp = mean(Resp), SD =sd(Resp))
+
+ggplot(SummVar2, aes(x = Var1, y = MeanResp)) + geom_line(aes(color = Var2)) + geom_point(aes(color = Var2)) + geom_errorbar(aes(ymin = MeanResp - SD, ymax = MeanResp + SD, color = Var2), width = 0.1) + theme_classic() + ylim(c(10,35)) + theme(legend.position = "bottom")
+
+```
+
+```{r quiz3}
+quiz(
+  question("En el gráfico anterior, ¿Que efectos son significativos?",
+    answer("Variable 1"),
+    answer("Variable 2", correct = TRUE),
+    answer("Interacción"),
+    answer("Variable 1, Variable 2 e interacción"),
+    answer("Nada es significativo"),
+    answer("Variable 1 y Variable 2"),
+    answer("Variable 1 e interacción"),
+    answer("Variable 2 e interacción"),
+    allow_retry = TRUE,
+    random_answer_order = TRUE
+  )
+)
+```
+
+### Caso 4
+
+```{r, cache=TRUE}
+set.seed(2018)
+Aa <- data.frame(Resp = rnorm(30, mean = 15, sd = 4), Var1 = "A", Var2 ="a")
+set.seed(2017)
+Ab <- data.frame(Resp = rnorm(30, mean = 30, sd = 4), Var1 = "A", Var2 ="b")
+set.seed(2016)
+Ba <- data.frame(Resp = rnorm(30, mean = 20, sd = 4), Var1 = "B", Var2 ="a")
+set.seed(2018)
+Bb <- data.frame(Resp = rnorm(30, mean = 20, sd = 4), Var1 = "B", Var2 ="b")
+set.seed(2017)
+Ca <- data.frame(Resp = rnorm(30, mean = 30, sd = 4), Var1 = "C", Var2 ="a")
+set.seed(2016)
+Cb  <- data.frame(Resp = rnorm(30, mean = 15, sd = 4), Var1 = "C", Var2 ="b")
+Var21 <- list(Aa,Ba,Ca,Ab,Bb,Cb)
+Var21 <- do.call(rbind, Var21)
+
+SummVar21 <-  Var21 %>%  group_by(Var2, Var1) %>% summarise(MeanResp = mean(Resp), SD =sd(Resp))
+
+ggplot(SummVar21, aes(x = Var1, y = MeanResp)) + geom_line(aes(color = Var2)) + geom_point(aes(color = Var2)) + geom_errorbar(aes(ymin = MeanResp - SD, ymax = MeanResp + SD, color = Var2), width = 0.1) + theme_classic() + ylim(c(10,35)) + theme(legend.position = "bottom")
+
+```
+
+```{r quiz4}
+quiz(
+  question("En el gráfico anterior, ¿Que efectos son significativos?",
+    answer("Variable 1"),
+    answer("Variable 2"),
+    answer("Interacción"),
+    answer("Variable 1, Variable 2 e interacción"),
+    answer("Nada es significativo"),
+    answer("Variable 1 y Variable 2"),
+    answer("Variable 1 e interacción", correct = TRUE),
+    answer("Variable 2 e interacción"),
+    allow_retry = TRUE,
+    random_answer_order = TRUE
+  )
+)
+```

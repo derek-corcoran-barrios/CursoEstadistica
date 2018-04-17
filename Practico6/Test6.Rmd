@@ -1,0 +1,12 @@
+---
+title: "Control 5"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Pregunta 1
+
+La planta *Ephedra chilensis* es una especie altoandina que contiene un alcaloide llamado efedrina, el cual es utilizado como componente broncodilatador en remedios contra el asma. Se sospecha que tanto los niveles de temperatura (efecto de la altura) y la precipitación (ladera oriente o poniente) afectan la concentración de este compuesto. Explique con detalle como diseñaría y analizaría un estudio sobre este fenómeno.

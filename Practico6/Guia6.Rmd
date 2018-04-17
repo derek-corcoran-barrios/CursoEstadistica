@@ -112,7 +112,7 @@ Var1 <- do.call(rbind, Var1)
 
 SummVar1 <-  Var1 %>%  group_by(Var2, Var1) %>% summarise(MeanResp = mean(Resp), SD =sd(Resp))
 
-plot1 <- ggplot(SummVar1, aes(x = Var1, y = MeanResp)) + geom_line(aes(color = Var2)) + geom_point(aes(color = Var2)) + geom_errorbar(aes(ymin = MeanResp - SD, ymax = MeanResp + SD, color = Var2), width = 0.1) + theme_classic() + ylim(c(10,35))
+plot1 <- ggplot(SummVar1, aes(x = Var1, y = MeanResp)) + geom_line(aes(color = Var2)) + geom_point(aes(color = Var2)) + geom_errorbar(aes(ymin = MeanResp - SD, ymax = MeanResp + SD, color = Var2), width = 0.1) + theme_classic() + ylim(c(10,35)) + ggtitle("A")
 
 
 summary(aov(Resp ~ Var1 + Var2 + Var1:Var2, data = Var1))
@@ -134,7 +134,7 @@ Var2 <- do.call(rbind, Var2)
 
 SummVar2 <-  Var2 %>%  group_by(Var2, Var1) %>% summarise(MeanResp = mean(Resp), SD =sd(Resp))
 
-plot2 <- ggplot(SummVar2, aes(x = Var1, y = MeanResp)) + geom_line(aes(color = Var2)) + geom_point(aes(color = Var2)) + geom_errorbar(aes(ymin = MeanResp - SD, ymax = MeanResp + SD, color = Var2), width = 0.1) + theme_classic() + ylim(c(10,35))
+plot2 <- ggplot(SummVar2, aes(x = Var1, y = MeanResp)) + geom_line(aes(color = Var2)) + geom_point(aes(color = Var2)) + geom_errorbar(aes(ymin = MeanResp - SD, ymax = MeanResp + SD, color = Var2), width = 0.1) + theme_classic() + ylim(c(10,35))  + ggtitle("B")
 
 summary(aov(Resp ~ Var1 + Var2 + Var1:Var2, data = Var2))
 
@@ -155,7 +155,7 @@ Var12 <- do.call(rbind, Var12)
 
 SummVar12 <-  Var12 %>%  group_by(Var2, Var1) %>% summarise(MeanResp = mean(Resp), SD =sd(Resp))
 
-plot12 <- ggplot(SummVar12, aes(x = Var1, y = MeanResp)) + geom_line(aes(color = Var2)) + geom_point(aes(color = Var2)) + geom_errorbar(aes(ymin = MeanResp - SD, ymax = MeanResp + SD, color = Var2), width = 0.1) + theme_classic() + ylim(c(10,35))
+plot12 <- ggplot(SummVar12, aes(x = Var1, y = MeanResp)) + geom_line(aes(color = Var2)) + geom_point(aes(color = Var2)) + geom_errorbar(aes(ymin = MeanResp - SD, ymax = MeanResp + SD, color = Var2), width = 0.1) + theme_classic() + ylim(c(10,35))  + ggtitle("C")
 
 summary(aov(Resp ~ Var1 + Var2 + Var1:Var2, data = Var12))
 
@@ -176,7 +176,7 @@ Var21 <- do.call(rbind, Var21)
 
 SummVar21 <-  Var21 %>%  group_by(Var2, Var1) %>% summarise(MeanResp = mean(Resp), SD =sd(Resp))
 
-plot21 <-ggplot(SummVar21, aes(x = Var1, y = MeanResp)) + geom_line(aes(color = Var2)) + geom_point(aes(color = Var2)) + geom_errorbar(aes(ymin = MeanResp - SD, ymax = MeanResp + SD, color = Var2), width = 0.1) + theme_classic() + ylim(c(10,35))
+plot21 <-ggplot(SummVar21, aes(x = Var1, y = MeanResp)) + geom_line(aes(color = Var2)) + geom_point(aes(color = Var2)) + geom_errorbar(aes(ymin = MeanResp - SD, ymax = MeanResp + SD, color = Var2), width = 0.1) + theme_classic() + ylim(c(10,35))   + ggtitle("D")
 
 summary(aov(Resp ~ Var1 + Var2 + Var1:Var2, data = Var21))
 

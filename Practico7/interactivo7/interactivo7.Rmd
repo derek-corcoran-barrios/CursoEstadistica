@@ -1,6 +1,9 @@
 ---
-title: "Tutorial"
-output: learnr::tutorial
+title: "Como formular tu anova"
+output:
+  learnr::tutorial:
+    progressive: true
+    fig_caption: yes
 runtime: shiny_prerendered
 ---
 
@@ -10,9 +13,9 @@ knitr::opts_chunk$set(echo = FALSE)
 ```
 
 
-## Prueba T de Student
+## Topic 1
 
-### Finalidad de la prueba T de Student 
+### Exercise 
 
 *Here's a simple exercise with an empty code chunk provided for entering the answer.*
 
