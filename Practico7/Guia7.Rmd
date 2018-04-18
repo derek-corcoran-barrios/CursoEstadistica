@@ -11,24 +11,157 @@ bibliography: biblio7.bib
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+suppressMessages(suppressWarnings(library(tidyverse, quietly = TRUE)))
 ```
 
-## R Markdown
+## ANOVA(s)
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+Si bien el ANOVA puede ser pensado como una extensión de una prueba de T de student, es mucho más complejo que eso, existen muchos tipos de anovas y sus combinaciones, tales como:
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+* ANOVA
+* ANOVA factorial o en bloque
+* ANOVA anidado o jerarquico
+* ANOVA desbalanceado
 
-```{r cars}
-summary(cars)
+Tanta es la variedad de ANOVAS que existen muchos libros dedicados exclusivamente a la discusión de este tipo de análisis [@girden1992anova]
+    
+ANOVA simple
+=================
+incremental:true
+class: small-code
+
+* Varios grupos comparten una variable que creemos que es diferente entre grupos
+    + por ejemplo ancho de sepalo puede ser differente entre tres especies de *Iris*
+    
+```{r}
+data(iris)
+IRISANOVA <- aov(Sepal.Width ~ Species, data = iris)
+summary(IRISANOVA)
 ```
 
-## Including Plots
+ANOVA simple
+=================
+incremental:true
+class: small-code
 
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
+```{r, echo=FALSE}
+ggplot(iris, aes(x = Species, y = Sepal.Width)) + geom_boxplot(aes(fill = Species)) + theme(legend.position = "bottom") + theme_classic()
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+ANOVA factorial
+===============
+incremental:true
+class: small-code
+
+* Más de un factor puede afectar nuestra variable respuesta
+* Además interacciones
+* Ejemplo: Economía de combustible en mtcars según si es automático o manual y el número de cilindros que tiene
+
+```{r, echo=FALSE}
+mt <- mtcars
+mt$am <- ifelse(mt$am == 0, "Automatic", "Manual")
+```
+
+```{r}
+ANOVA.AUTO <- aov(mpg ~ am + cyl + am:cyl, data = mt)
+summary(ANOVA.AUTO)
+```
+
+
+ANOVA factorial
+===============
+
+```{r, echo = FALSE}
+ggplot(mt, aes(x = factor(cyl), y = mpg)) + geom_boxplot(aes(fill = am)) + geom_jitter(aes(color = am)) + xlab("cylinders") + theme_classic() + theme(legend.position = "bottom")
+```
+
+***
+```{r, echo = FALSE}
+mt <- mt %>% group_by(am, cyl) %>% summarise(MeanMPG = mean(mpg), SDMPG = sd(mpg))
+
+ggplot(mt, aes(x = factor(cyl), y = MeanMPG)) + geom_line(aes(color = am))+ geom_errorbar(aes(ymin = MeanMPG - SDMPG, ymax = MeanMPG + SDMPG, color = am), width = 0.2) + geom_point(aes(color = am)) + xlab("cylinders") + theme_classic() + theme(legend.position = "bottom")
+```
+
+
+ANOVA anidado o jerarquico
+===============
+incremental:true
+class: small-code
+
+* Tenemos un factor jerarquicamente dentro de otro 
+  + individuos dentro de una especie)
+  + hojas dentro de un árbol
+  + varias medidas dentro de un mismo individuo
+  + en anova si el factor B esta anidado dendtro de A tenemos `A/B`
+* Ejemplo individuos en la base de datos CO2
+
+```{r}
+ANOVAUptake <- aov(uptake  ~  Type + Treatment + Type:Treatment + Type/Plant, data=CO2)
+summary(ANOVAUptake)
+```
+
+Variables fijas vs aleatoreas
+================
+incremental:true
+class: small-code
+
+* **Variables fijas:** Se espera que tengan una influencia predecible y sistemática en sobre lo que queremos explicar. Además usan todos los niveles de un factor (Ejemplo genero)
+    + Uso en `R`: A + B
+* **Variables aleatoreas:** Se espera que su influencia sea impredecible e idiosincratica. Además no se usan todos los niveles de un factor (todos los individuos) A + Error(B)
+
+Variables fijas vs aleatoreas
+================
+incremental:true
+class: small-code
+
+```{r}
+ANOVAUptake <- aov(uptake  ~  Type + Treatment + Type:Treatment + Error(Type/Plant), data=CO2)
+summary(ANOVAUptake)
+```
+
+
+Más casos y resumen
+=========================
+incremental:true
+class: small-code
+
+* Caso hipotético $Y$ es la variable a explicar y todo el resto variables explicativas en la base de datos d
+* ANOVA Simple
+```{r, eval=FALSE}
+aov(Y ~ A + B, data=d)
+```
+* para agregar interacciones
+
+```{r, eval=FALSE}
+aov(Y ~ A + B + A:B, data=d)
+```
+Igual a
+
+```{r, eval = FALSE}
+aov(Y ~ A * B, data=d)
+```
+
+Anovas anidados y variables aleatorias
+=======
+incremental:true
+class: small-code
+
+* B anidado en A
+
+```{r, eval = FALSE}
+aov(Y ~ A/B, data=d)
+```
+
+* A es una variable aleatoria pero B esta anidada en A
+
+```{r, eval = FALSE}
+aov(Y ~ B + Error(A/B), data=d)
+```
+
+
+* B y X interactuan dentro de niveles aleatorios de A
+
+```{r, eval = FALSE}
+aov(Y ~ (B*X) + Error(A/(B*X)), data=d)
+```
